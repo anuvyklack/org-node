@@ -2823,10 +2823,10 @@ See also the subroutine `org-node-goto-id'."
   (when (numberp exact)
     (error "Function org-node-goto no longer takes a position argument"))
   (if-let* ((file (org-mem-file-truename node))
-            (buf (or (find-buffer-visiting file)
+            (buffer (or (find-buffer-visiting file)
                      (and (file-exists-p file)
                           (find-file-noselect file)))))
-      (org-node-goto-id (org-mem-id node) exact buf)
+      (org-node-goto-id (org-mem-id node) exact buffer)
     (org-mem-reset t "org-node: Didn't find file, resetting...")))
 
 (defun org-node-goto-id (id &optional exact buffer)

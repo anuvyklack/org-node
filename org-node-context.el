@@ -314,15 +314,15 @@ properties.  Org-mode is enabled, but the org-element cache is not."
   "Visit the thing under point."
   (interactive () org-node-context-mode)
   (unless (derived-mode-p 'org-node-context-mode)
-    (error "`org-node-context-visit-thing' called outside context buffer"))
-  (let* ((value-atpt (oref (magit-current-section) value))
+    (user-error "`org-node-context-visit-thing' called outside context buffer"))
+  (let* ((value-at-point (oref (magit-current-section) value))
          link-pos
-         (node (if (org-mem-entry-p value-atpt)
+         (node (if (org-mem-entry-p value-at-point)
                    ;; Bit magical, but `magit-insert-section' could store the
                    ;; node as the "value" at that section.
-                   value-atpt
-                 (setq link-pos (org-mem-link-pos value-atpt))
-                 (org-mem-entry-by-id (org-mem-link-nearby-id value-atpt)))))
+                   value-at-point
+                 (setq link-pos (org-mem-link-pos value-at-point))
+                 (org-mem-entry-by-id (org-mem-link-nearby-id value-at-point)))))
     (org-node-goto node)
     (when link-pos
       (goto-char link-pos)
@@ -331,29 +331,25 @@ properties.  Org-mode is enabled, but the org-element cache is not."
 (defun org-node-context-raise-1 ()
   "Either display a context buffer or refresh an already visible one."
   (interactive)
-  (let ((buf org-node-context-main-buffer))
+  (let ((buffer org-node-context-main-buffer))
     (cond
      ((derived-mode-p 'org-node-context-mode)
       (save-excursion
         (org-node-context--refresh)))
-
-     ((get-buffer-window buf 'visible)
+     ((get-buffer-window buffer 'visible)
       (if (derived-mode-p 'org-mode)
           (org-node-context--ensure-context-is-for-here)
-        (org-node-context--refresh buf)))
-
-     ((get-buffer buf)
+        (org-node-context--refresh buffer)))
+     ((get-buffer buffer)
       (let ((display-buffer-overriding-action
              '(( display-buffer-in-previous-window
                  display-buffer-pop-up-window )
                (inhibit-same-window . t))))
-        (display-buffer buf)))
-
+        (display-buffer buffer)))
      ((derived-mode-p 'org-mode)
-      (org-node-context--refresh (get-buffer-create buf)
+      (org-node-context--refresh (get-buffer-create buffer)
                                  (org-entry-get-with-inheritance "ID"))
-      (display-buffer buf))
-
+      (display-buffer buffer))
      (t
       (message "Found no context buffer, visit an org-mode buffer first")))))
 
@@ -383,10 +379,10 @@ Repeatable on the last key of a key sequence if
   (interactive)
   (if-let* ((win (get-buffer-window org-node-context-main-buffer 'visible)))
       (quit-window nil win)
-    (let ((buf (get-buffer-create org-node-context-main-buffer)))
+    (let ((buffer (get-buffer-create org-node-context-main-buffer)))
       (when (derived-mode-p 'org-mode)
-        (org-node-context--refresh buf (org-entry-get-with-inheritance "ID")))
-      (display-buffer buf))))
+        (org-node-context--refresh buffer (org-entry-get-with-inheritance "ID")))
+      (display-buffer buffer))))
 
 ;;;###autoload
 (defun org-node-context-dwim ()
@@ -410,10 +406,10 @@ otherwise call the latter."
          (not (org-node-context--displaying-p nil id))
          (org-node-context--refresh org-node-context-main-buffer id))))
 
-(defun org-node-context--displaying-p (buf id)
-  "Is BUF displaying context for ID?"
-  (when-let* ((buf (get-buffer (or buf org-node-context-main-buffer))))
-    (equal id (buffer-local-value 'org-node-context--current buf))))
+(defun org-node-context--displaying-p (buffer id)
+  "Is BUFfer displaying context for ID?"
+  (when-let* ((buffer (get-buffer (or buffer org-node-context-main-buffer))))
+    (equal id (buffer-local-value 'org-node-context--current buffer))))
 
 (defun org-node-context-refresh-this-buffer (&rest _)
   "Designed for `revert-buffer-function'."
@@ -424,14 +420,14 @@ otherwise call the latter."
 
 ;;; Plumbing
 
-(defun org-node-context--refresh (&optional buf id from-history-nav)
-  "Refresh buffer BUF to show context for node known by ID.
+(defun org-node-context--refresh (&optional buffer id from-history-nav)
+  "Refresh buffer BUFFER to show context for node known by ID.
 
-If argument BUF not supplied, use `org-node-context-main-buffer'.
+If argument BUFFER not supplied, use `org-node-context-main-buffer'.
 If argument ID not supplied, just refresh the context already shown in
 that buffer."
   (org-node-context--maybe-init-persistence)
-  (with-current-buffer (get-buffer-create (or buf org-node-context-main-buffer))
+  (with-current-buffer (get-buffer-create (or buffer org-node-context-main-buffer))
     (unless (derived-mode-p 'org-node-context-mode)
       (org-node-context-mode))
     (let ((inhibit-read-only t))
