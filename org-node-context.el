@@ -30,7 +30,8 @@
   (require 'org-element))
 
 (defgroup org-node-context nil "Preview backlink contexts in separate buffer."
-  :group 'org-node)
+  :group 'org-node
+  :prefix 'org-node-context-)
 
 
 ;;; Persistence
@@ -47,6 +48,7 @@ have a bad computer, and often re-start Emacs.
 
 For the cache location, see `org-node-data-dir'."
   :type 'boolean
+  :group 'org-node-context
   :package-version '(org-node . "2.0.0"))
 
 (defvar org-node-context--previews (make-hash-table :test 'equal)
@@ -196,6 +198,7 @@ time that context was shown in a visible window.  Including:
 (defcustom org-node-context-collapse-more-than 5
   "How many backlinks before they should all start collapsed."
   :type '(choice natnum (const :value nil))
+  :group 'org-node-context
   :package-version '(org-node . "2.0.0"))
 
 ;; (defcustom org-node-context-truncate-to-lines 18
@@ -203,6 +206,7 @@ time that context was shown in a visible window.  Including:
 ;; Applies when the hook `org-node-context-postprocess-hook'
 ;; contains `org-node-context--truncate-buffer'."
 ;;   :type '(choice natnum (const :value nil))
+;;   :group 'org-node-context
 ;;   :package-version '(org-node . "2.0.0"))
 
 ;; TODO: Solve problem if truncating away a :END: or #+END_... but not #+BEGIN,
@@ -276,6 +280,7 @@ Point is inside the link for which the preview is being generated.
 Font-locking is NOT in effect at this time, so there are no text
 properties.  Org-mode is enabled, but the org-element cache is not."
   :type 'hook
+  :group 'org-node-context
   :package-version '(org-node . "2.0.0"))
 
 (defcustom org-node-context-refresh-hook
@@ -284,11 +289,13 @@ properties.  Org-mode is enabled, but the org-element cache is not."
         )
   "Hook run in a context buffer after refreshing it."
   :type 'hook
+  :group 'org-node-context
   :package-version '(org-node . "2.0.0"))
 
 (defcustom org-node-context-main-buffer "*Backlinks*"
   "Name of the main context buffer."
   :type 'string
+  :group 'org-node-context
   :package-version '(org-node . "2.0.0"))
 
 ;;;###autoload
